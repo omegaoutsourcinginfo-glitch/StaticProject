@@ -374,11 +374,13 @@
             <div class="flex flex-col gap-1.5" data-field="typeBienVrd">
               <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Type de bien <span class="text-brand-wine">*</span></span>
               <p class="text-xs text-slate-500">Choisissez un ou plusieurs types — les champs s'affichent pour chaque sélection.</p>
-              <div class="grid grid-cols-2 gap-2" data-multi-choice-group="typeBienVrd" role="group" aria-label="Type de bien">
+              <div class="grid grid-cols-2 gap-2 sm:grid-cols-3" data-multi-choice-group="typeBienVrd" role="group" aria-label="Type de bien">
                 <button type="button" data-multi-value="Villa" class="choice-card rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-brand-wine" aria-pressed="false">Villa</button>
                 <button type="button" data-multi-value="Immeuble" class="choice-card rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-brand-wine" aria-pressed="false">Immeuble</button>
                 <button type="button" data-multi-value="Lot économique" class="choice-card rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-brand-wine" aria-pressed="false">Lot économique</button>
+                <button type="button" data-multi-value="Bungalow" class="choice-card rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-brand-wine" aria-pressed="false">Bungalow</button>
                 <button type="button" data-multi-value="Usine" class="choice-card rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-brand-wine" aria-pressed="false">Usine</button>
+                <button type="button" data-multi-value="Hôtel" class="choice-card rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-brand-wine" aria-pressed="false">Hôtel</button>
               </div>
               <p class="field-error hidden" role="alert"></p>
             </div>
@@ -541,9 +543,10 @@
               <span>Suivant</span>
               <span aria-hidden="true">→</span>
             </button>
-            <button type="submit" id="btn-submit" class="btn-brand hidden rounded-lg px-5 py-3 text-sm font-semibold">
+            <button type="submit" id="btn-submit" class="btn-brand hidden rounded-lg px-5 py-3 text-sm font-semibold disabled:opacity-60">
               Envoyer la demande
             </button>
+            <p id="devis-submit-feedback" class="hidden rounded-lg px-3 py-2.5 text-center text-sm" role="alert" aria-live="polite"></p>
           </div>
         </div>
       </form>
@@ -559,7 +562,7 @@
       </div>
       <h2 class="mb-3 text-xl font-bold text-slate-800 sm:text-2xl">Demande enregistrée</h2>
       <p class="mx-auto max-w-md text-sm leading-relaxed text-slate-600 sm:text-base">
-        Merci ! Votre demande de devis a été enregistrée avec succès. Notre équipe vous contactera sous 24h.
+        Merci ! Votre demande de devis a bien été envoyée. Notre équipe vous contactera sous 24h.
       </p>
       <a href="index.html" class="btn-brand mt-8 inline-flex rounded-lg px-6 py-3 text-sm font-semibold">
         Retour à l'accueil
@@ -571,6 +574,13 @@
     </footer>
   </main>
 
+  <script id="contact-config" type="application/json">
+  {
+    "email": "info@2oservice.com",
+    "formEmail": "omegaoutsourcing.info@gmail.com"
+  }
+  </script>
+  <script src="assets/devis-email-template.js"></script>
   <script src="assets/devis-form.js"></script>
 </body>
 </html>

@@ -44,8 +44,8 @@
   {
     "adresse": "Angle Bd Noukawama et Med VI, Résidence El Baida I",
     "ville": "2ème étage, App 212, Casablanca",
-    "email": "20522contact@gmail.com",
-    "formEmail": "maryamlabyed2002@gmail.com",
+    "email": "info@2oservice.com",
+    "formEmail": "omegaoutsourcing.info@gmail.com",
     "telephone": "06 44 91 37 60"
   }
   </script>
@@ -337,11 +337,11 @@
             class="space-y-4"
             novalidate
             @submit.prevent="onSubmit($event)"
-            @htmx:after-request="onHtmxAfterRequest($event)"
           >
             <input type="hidden" name="_subject" value="Contact — Bureau d'étude" />
-            <input type="hidden" name="_template" value="table" />
+            <input type="hidden" name="_template" value="basic" />
             <input type="hidden" name="_captcha" value="false" />
+            <input type="hidden" name="_replyto" value="" />
             <input type="text" name="_honey" class="hidden" tabindex="-1" autocomplete="off" />
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -420,8 +420,7 @@
     </footer>
   </div>
 
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-  <script src="assets/app.js"></script>
+  <script src="assets/devis-email-template.js"></script>
   <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </body>
 </html>

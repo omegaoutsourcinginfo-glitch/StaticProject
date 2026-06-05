@@ -41,12 +41,66 @@
   };
 
   const els = {};
+  let submitting = false;
+
+  function getFormSubmitEmail() {
+    return window.FormMail?.getFormSubmitEmail() || "omegaoutsourcing.info@gmail.com";
+  }
+
+  function hideSubmitFeedback() {
+    if (!els.submitFeedback) return;
+    els.submitFeedback.textContent = "";
+    els.submitFeedback.className = "hidden rounded-lg px-3 py-2.5 text-center text-sm";
+  }
+
+  function showSubmitError(message) {
+    if (!els.submitFeedback) return;
+    els.submitFeedback.textContent = message;
+    els.submitFeedback.className =
+      "block rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-center text-sm text-red-700";
+    els.submitFeedback.classList.remove("hidden");
+    els.submitFeedback.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function setSubmitting(active) {
+    submitting = active;
+    if (els.btnSubmit) {
+      els.btnSubmit.disabled = active;
+      els.btnSubmit.textContent = active ? "Envoi…" : "Envoyer la demande";
+    }
+    if (els.btnNext) els.btnNext.disabled = active;
+  }
+
+  async function submitDevisEmail() {
+    const payload = collectPayload();
+    const client = payload.client || {};
+    const subject = `Demande de devis — ${client.prenom || ""} ${client.nom || ""}`.trim();
+    const template = window.DevisEmailTemplate;
+
+    if (!template) {
+      return { ok: false, message: "Module e-mail manquant. Rechargez la page." };
+    }
+
+    const formData = new FormData();
+    formData.append("_subject", subject);
+    formData.append("_template", "basic");
+    formData.append("_captcha", "false");
+    if (client.email) formData.append("_replyto", client.email);
+    formData.append("message", template.build(payload));
+
+    if (!window.FormMail?.submitFormDataToEmail) {
+      return { ok: false, message: "Module d'envoi manquant. Rechargez la page." };
+    }
+    return window.FormMail.submitFormDataToEmail(formData);
+  }
 
   /** Ordre unique — source de vérité pour les listes déroulantes */
+  const TYPE_OPTIONS = ["Villa", "Immeuble", "Lot économique", "Bungalow", "Usine", "Hôtel"];
+
   const SELECT_OPTIONS = {
-    vrdTypeBien: ["Villa", "Immeuble", "Lot économique", "Usine"],
-    typeBatiment: ["Villa", "Immeuble", "Lot économique", "Bungalow", "Usine", "Hôtel"],
-    typeProjetEtude: ["Villa", "Immeuble", "Lot économique", "Bungalow", "Usine", "Hôtel"],
+    vrdTypeBien: TYPE_OPTIONS,
+    typeBatiment: TYPE_OPTIONS,
+    typeProjetEtude: TYPE_OPTIONS,
   };
 
   const NATURE_DEMANDE_LABELS = {
@@ -911,6 +965,7 @@
     els.btnBack.classList.toggle("hidden", state.step <= 1);
     els.btnNext.classList.toggle("hidden", isLastFormStep());
     els.btnSubmit.classList.toggle("hidden", !isLastFormStep());
+    if (!submitting) hideSubmitFeedback();
 
     updateMultiChoiceCards("typeBienVrd");
     updateMultiChoiceCards("typeProjetMoCg");
@@ -938,10 +993,6 @@
   }
 
   function showSuccess() {
-    const payload = collectPayload();
-    console.log("Demande de devis — données complètes:", payload);
-    console.log(JSON.stringify(payload, null, 2));
-
     els.formWrapper.classList.add("hidden");
     els.progressWrapper.classList.add("hidden");
     els.successScreen.classList.remove("hidden");
@@ -974,7 +1025,7 @@
     render();
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     readInputsToState();
     const errors = validateStep(state.step);
@@ -982,7 +1033,27 @@
       applyFieldErrors(errors);
       return;
     }
-    showSuccess();
+    hideSubmitFeedback();
+    if (location.protocol === "file:") {
+      showSubmitError(
+        "Ouvrez le site avec Live Server (adresse http://), pas en double-cliquant le fichier HTML."
+      );
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const result = await submitDevisEmail();
+      if (result.ok) {
+        hideSubmitFeedback();
+        showSuccess();
+      } else {
+        showSubmitError(result.message);
+      }
+    } catch {
+      showSubmitError("Envoi impossible. Vérifiez votre connexion internet.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function bindChoices() {
@@ -1100,6 +1171,7 @@
     els.btnBack = $("btn-back");
     els.btnNext = $("btn-next");
     els.btnSubmit = $("btn-submit");
+    els.submitFeedback = $("devis-submit-feedback");
     els.panels = document.querySelectorAll("[data-step]");
     els.panelStructure = $("panel-structure");
     els.panelEtudeDomaine = $("panel-etude-domaine");
