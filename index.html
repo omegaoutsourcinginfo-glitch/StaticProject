@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Omega Outsourcing Service (2OS) — Bureau d'étude technique à Casablanca. Études techniques, structure, VRD et fondations. Site bientôt en ligne." />
-  <meta name="keywords" content="Omega Outsourcing Service, 2OS, bureau d'étude technique, Casablanca, génie civil, structure, VRD, fondations, ingénierie, Maroc" />
+  <meta name="description" content="Omega Outsourcing Service (2OS) — Bureau d'étude technique à Casablanca. Études techniques, structure, VRD, coordination, interprétation, maître d'ouvrage délégué et contractant général. Site bientôt en ligne." />
+  <meta name="keywords" content="Omega Outsourcing Service, 2OS, bureau d'étude technique, Casablanca, génie civil, structure, VRD, coordination, interprétation, maître d'ouvrage délégué, contractant général, ingénierie, Maroc" />
   <title>Omega Outsourcing Service · Bureau d'étude technique</title>
   <link rel="icon" href="assets/favicon.png" type="image/png" sizes="32x32" />
   <link rel="icon" href="assets/logo.png" type="image/png" sizes="any" />
@@ -46,7 +46,9 @@
     "ville": "2ème étage, App 212, Casablanca",
     "email": "info@2oservice.com",
     "formEmail": "omegaoutsourcing.info@gmail.com",
-    "telephone": "06 44 91 37 60"
+    "telephone": "06 44 91 37 60",
+    "latitude": 33.585482100598725,
+    "longitude": -7.606921427208705
   }
   </script>
   <style>
@@ -212,6 +214,37 @@
     [x-cloak] {
       display: none !important;
     }
+    .map-zoom-btn {
+      display: flex;
+      height: 2rem;
+      width: 2rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      color: #7a2035;
+      background: rgba(255, 255, 255, 0.95);
+      transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+    }
+    .map-zoom-btn:hover:not(:disabled) {
+      background: #eef4d9;
+      color: #5a6b18;
+    }
+    .map-zoom-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+    .map-action-btn {
+      border: 1px solid rgba(122, 32, 53, 0.14);
+      background: rgba(255, 255, 255, 0.95);
+      color: #7a2035;
+      transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+    .map-action-btn:hover {
+      border-color: rgba(143, 176, 31, 0.45);
+      background: #eef4d9;
+      color: #5a6b18;
+      transform: translateY(-1px);
+    }
   </style>
 </head>
 <body class="m-0 min-h-dvh overflow-x-hidden bg-brand-cream p-0 font-sans antialiased text-slate-700">
@@ -269,14 +302,17 @@
           qui construit demain
         </h1>
         <p class="mb-6 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg">
-          Structure, VRD, fondations — nous accompagnons vos projets avec rigueur et réactivité. Le site complet arrive très bientôt.
+          Structure, VRD, coordination, interprétation — maître d'ouvrage délégué, contractant général : nous accompagnons vos projets avec rigueur et réactivité. Le site complet arrive très bientôt.
         </p>
 
         <div class="mb-6 flex flex-wrap gap-2" aria-label="Expertises">
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Études techniques</span>
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Structure</span>
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">VRD</span>
-          <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Fondations</span>
+          <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Coordination</span>
+          <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Interprétation</span>
+          <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Maître d'ouvrage délégué</span>
+          <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Contractant général</span>
         </div>
 
         <div class="mb-6 grid grid-cols-3 gap-2 sm:gap-3" aria-label="Génie civil">
@@ -318,6 +354,84 @@
               <a id="contact-telephone-2" href="#" class="font-medium text-slate-200 hover:text-blue-400"></a>
             </li> -->
           </ul>
+          <div class="mt-4 space-y-3" x-show="hasMap" x-cloak>
+            <div class="relative overflow-hidden rounded-lg border border-brand-wine/15 shadow-sm">
+              <div
+                class="absolute right-2 top-2 z-10 flex flex-col gap-1 rounded-lg border border-white/80 bg-white/95 p-1 shadow-sm backdrop-blur-sm"
+                role="group"
+                aria-label="Zoom carte"
+              >
+                <button
+                  type="button"
+                  class="map-zoom-btn"
+                  aria-label="Zoom avant"
+                  :disabled="mapZoom >= mapZoomMax"
+                  @click="zoomIn()"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="map-zoom-btn"
+                  aria-label="Zoom arrière"
+                  :disabled="mapZoom <= mapZoomMin"
+                  @click="zoomOut()"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <path stroke-linecap="round" d="M5 12h14" />
+                  </svg>
+                </button>
+              </div>
+              <iframe
+                :key="mapZoom"
+                title="Carte — Omega Outsourcing Service, Casablanca"
+                :src="mapEmbedUrl"
+                class="block h-52 w-full border-0 sm:h-64"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen
+              ></iframe>
+            </div>
+            <div class="flex flex-wrap gap-2" role="group" aria-label="Actions carte">
+              <a
+                :href="googleMapsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="map-action-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm"
+              >
+                Google Maps
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3" />
+                </svg>
+              </a>
+              <a
+                :href="directionsUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="map-action-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm"
+              >
+                Itinéraire
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m9 4 0 13M15 7v13" />
+                </svg>
+              </a>
+              <a
+                :href="wazeUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="map-action-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm"
+              >
+                Waze
+                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
+                  <circle cx="12" cy="9" r="2.5" />
+                </svg>
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

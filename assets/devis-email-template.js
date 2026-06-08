@@ -490,18 +490,58 @@ function createAjaxFormHandlers(opts = {}) {
 document.addEventListener("alpine:init", () => {
   Alpine.data("contactInfo", () => {
     const contact = getContactConfig();
+    const latitude = Number(contact.latitude);
+    const longitude = Number(contact.longitude);
     return {
       adresse: contact.adresse ?? "",
       ville: contact.ville ?? "",
       email: contact.email ?? "",
       telephone: contact.telephone ?? "",
       telephone2: contact.telephone2 ?? "",
+      latitude,
+      longitude,
+      mapZoom: 17,
+      mapZoomMin: 14,
+      mapZoomMax: 20,
       year: new Date().getFullYear(),
       phoneHref(phone) {
         return "tel:" + String(phone).replace(/\s/g, "");
       },
       get mailHref() {
         return "mailto:" + this.email;
+      },
+      get hasMap() {
+        return Number.isFinite(this.latitude) && Number.isFinite(this.longitude);
+      },
+      get mapCoords() {
+        return `${this.latitude},${this.longitude}`;
+      },
+      get mapEmbedUrl() {
+        const marker = `color:green|label:2OS|${this.mapCoords}`;
+        const params = new URLSearchParams({
+          q: this.mapCoords,
+          hl: "fr",
+          z: String(this.mapZoom),
+          t: "m",
+          markers: marker,
+          output: "embed",
+        });
+        return `https://maps.google.com/maps?${params.toString()}`;
+      },
+      zoomIn() {
+        if (this.mapZoom < this.mapZoomMax) this.mapZoom += 1;
+      },
+      zoomOut() {
+        if (this.mapZoom > this.mapZoomMin) this.mapZoom -= 1;
+      },
+      get googleMapsUrl() {
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.mapCoords)}`;
+      },
+      get directionsUrl() {
+        return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(this.mapCoords)}`;
+      },
+      get wazeUrl() {
+        return `https://waze.com/ul?ll=${this.latitude},${this.longitude}&navigate=yes`;
       },
     };
   });
