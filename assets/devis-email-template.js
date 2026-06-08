@@ -327,6 +327,119 @@ function getFormSubmitEmail() {
   return c.formEmail || c.email || "omegaoutsourcing.info@gmail.com";
 }
 
+function getWeb3FormsAccessKey() {
+  const key = getContactConfig().web3formsAccessKey;
+  return typeof key === "string" ? key.trim() : "";
+}
+
+/** "auto" | "web3forms" | "formsubmit" — auto : Web3Forms puis FormSubmit en secours */
+function getFormProvider() {
+  const p = getContactConfig().formProvider;
+  if (p === "formsubmit" || p === "web3forms" || p === "auto") return p;
+  return "auto";
+}
+
+function buildPayloadFromFormData(formData) {
+  const payload = {};
+  formData.forEach((value, key) => {
+    if (key === "_honey" && value) return;
+    payload[key] = value;
+  });
+  return payload;
+}
+
+function buildWeb3FormsBody(payload) {
+  const nom = payload.nom || "";
+  const prenom = payload.prenom || "";
+  const replyTo = payload.email || payload._replyto || "";
+  const corps = payload.message || payload.description || "";
+
+  const body = {
+    access_key: getWeb3FormsAccessKey(),
+    subject: payload._subject || "Message — Omega Outsourcing Service",
+    from_name: "Omega Outsourcing Service",
+    botcheck: false,
+  };
+
+  if (replyTo) body.replyto = replyTo;
+
+  // Champs personnalisés en français — évite Name / Email / Phone en anglais + doublon.
+  if (corps && corps.length > 120) {
+    body["Demande"] = corps;
+    return body;
+  }
+
+  if (prenom) body["Prénom"] = prenom;
+  if (nom) body["Nom"] = nom;
+  if (replyTo) body["E-mail"] = replyTo;
+  if (payload.telephone) body["Téléphone"] = payload.telephone;
+  if (corps) body["Message"] = corps;
+
+  return body;
+}
+
+const FORM_FETCH_TIMEOUT_MS = 12000;
+
+async function fetchFormService(url, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FORM_FETCH_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error("timeout");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function submitViaWeb3Forms(formData) {
+  const accessKey = getWeb3FormsAccessKey();
+  if (!accessKey) {
+    return {
+      ok: false,
+      message:
+        "Clé Web3Forms manquante. Ajoutez web3formsAccessKey dans contact-config (https://web3forms.com).",
+    };
+  }
+
+  let res;
+  try {
+    res = await fetchFormService("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(buildWeb3FormsBody(buildPayloadFromFormData(formData))),
+    });
+  } catch (err) {
+    if (err.message === "timeout") {
+      return {
+        ok: false,
+        message:
+          "Délai dépassé (12 s). Réessayez ou écrivez à " + getFormSubmitEmail() + ".",
+      };
+    }
+    return {
+      ok: false,
+      message: "Connexion à Web3Forms impossible. Vérifiez votre réseau.",
+    };
+  }
+
+  let data = {};
+  try {
+    data = await res.json();
+  } catch {
+    return { ok: false, message: "Réponse invalide du service Web3Forms." };
+  }
+
+  if (data.success) return { ok: true, message: "" };
+  return {
+    ok: false,
+    message: data.message || "Envoi impossible via Web3Forms. Vérifiez la clé d'accès.",
+  };
+}
+
 function parseFormSubmitResponse(res, data) {
   const ok = res.ok && (data.success === true || data.success === "true");
   if (ok) return { ok: true, message: "" };
@@ -347,18 +460,92 @@ function parseFormSubmitResponse(res, data) {
   };
 }
 
-async function submitFormDataToEmail(formData) {
-  const res = await fetch(
-    "https://formsubmit.co/ajax/" + encodeURIComponent(getFormSubmitEmail()),
-    { method: "POST", body: formData, headers: { Accept: "application/json" } }
-  );
-  let data = {};
+async function submitViaFormSubmit(formData) {
+  const mail = getFormSubmitEmail();
+
   try {
-    data = await res.json();
-  } catch {
-    return { ok: false, message: "Réponse invalide du serveur d'envoi." };
+    const res = await fetchFormService(
+      "https://formsubmit.co/ajax/" + encodeURIComponent(mail),
+      { method: "POST", body: formData, headers: { Accept: "application/json" } }
+    );
+
+    if (res.status === 521) {
+      return {
+        ok: false,
+        message:
+          "FormSubmit est indisponible (521). Le secours Web3Forms sera utilisé si configuré.",
+      };
+    }
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      return { ok: false, message: "Réponse invalide du serveur FormSubmit." };
+    }
+
+    return parseFormSubmitResponse(res, data);
+  } catch (err) {
+    if (err.message === "timeout") {
+      return {
+        ok: false,
+        message: "FormSubmit ne répond pas (délai 12 s).",
+      };
+    }
+    return {
+      ok: false,
+      message: "FormSubmit est inaccessible.",
+    };
   }
-  return parseFormSubmitResponse(res, data);
+}
+
+async function submitFormDataToEmail(formDataOrForm) {
+  const formData =
+    formDataOrForm instanceof HTMLFormElement
+      ? new FormData(formDataOrForm)
+      : formDataOrForm;
+
+  if (location.protocol === "file:") {
+    return {
+      ok: false,
+      message:
+        "Ouvrez le site via http://localhost (Live Server), pas en double-cliquant le fichier HTML.",
+    };
+  }
+
+  const provider = getFormProvider();
+  const hasWeb3 = !!getWeb3FormsAccessKey();
+
+  const tryWeb3 = () => submitViaWeb3Forms(formData);
+  const tryFormSubmit = () => submitViaFormSubmit(formData);
+
+  if (provider === "formsubmit") {
+    const primary = await tryFormSubmit();
+    if (primary.ok) return primary;
+    if (hasWeb3) {
+      const fallback = await tryWeb3();
+      if (fallback.ok) return fallback;
+    }
+    return primary;
+  }
+
+  if (provider === "web3forms") {
+    if (!hasWeb3) return tryFormSubmit();
+    const primary = await tryWeb3();
+    if (primary.ok) return primary;
+    const fallback = await tryFormSubmit();
+    if (fallback.ok) return fallback;
+    return primary;
+  }
+
+  // auto : FormSubmit d'abord (e-mails propres en français), Web3Forms en secours
+  const primary = await tryFormSubmit();
+  if (primary.ok) return primary;
+  if (hasWeb3) {
+    const fallback = await tryWeb3();
+    if (fallback.ok) return fallback;
+  }
+  return primary;
 }
 
 window.FormMail = {
@@ -433,11 +620,11 @@ function createAjaxFormHandlers(opts = {}) {
     submitting: false,
     successMessage:
       opts.successMessage ??
-      "Message envoyé. Merci — nous revenons vers vous rapidement.",
+      "Merci ! Votre message a été envoyé.",
     invalidMessage: "Merci de compléter les champs obligatoires.",
     submitBusyLabel: opts.submitBusyLabel ?? "Envoi…",
     feedbackSuccess:
-      "block rounded-lg border border-brand-green/30 bg-brand-green-light px-3 py-2.5 text-center text-sm text-brand-green",
+      "feedback-enter block rounded-lg border border-brand-green/40 bg-brand-green-light px-4 py-3.5 text-center text-sm font-semibold text-brand-green shadow-sm",
     feedbackError:
       "block rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2.5 text-center text-sm text-red-400",
     get contactEmail() {
@@ -471,15 +658,25 @@ function createAjaxFormHandlers(opts = {}) {
       }
       this.submitting = true;
       try {
-        const result = await submitFormDataToEmail(new FormData(form));
+        const result = await submitFormDataToEmail(form);
         if (result.ok) {
           this.showSuccess(this.successMessage);
           form.reset();
+          this.$nextTick(() => {
+            form.querySelector('[role="alert"]')?.scrollIntoView({
+              behavior: "smooth",
+              block: "nearest",
+            });
+          });
         } else {
           this.showError(result.message);
         }
       } catch {
-        this.showError("Envoi impossible. Vérifiez votre connexion internet.");
+        this.showError(
+          "Envoi impossible. Vérifiez votre connexion internet ou écrivez-nous à " +
+            getFormSubmitEmail() +
+            "."
+        );
       } finally {
         this.submitting = false;
       }
@@ -542,6 +739,29 @@ document.addEventListener("alpine:init", () => {
       },
       get wazeUrl() {
         return `https://waze.com/ul?ll=${this.latitude},${this.longitude}&navigate=yes`;
+      },
+      get mapsAppUrl() {
+        return `geo:${this.latitude},${this.longitude}?q=${this.latitude},${this.longitude}`;
+      },
+      openInMapsApp(event) {
+        if (!this.hasMap) return;
+        const lat = this.latitude;
+        const lng = this.longitude;
+        const ua = navigator.userAgent || "";
+        let url = this.mapsAppUrl;
+        if (/iPad|iPhone|iPod/i.test(ua)) {
+          url = `maps://?ll=${lat},${lng}&q=${encodeURIComponent(this.adresse)}`;
+        } else if (/Android/i.test(ua)) {
+          url = `geo:${lat},${lng}?q=${lat},${lng}(2OS)`;
+        } else {
+          url = this.googleMapsUrl;
+        }
+        if (event) event.preventDefault();
+        if (/iPad|iPhone|iPod|Android/i.test(ua)) {
+          window.location.href = url;
+        } else {
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
       },
     };
   });

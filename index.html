@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,8 +20,8 @@
           fontFamily: { sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"] },
           colors: {
             brand: {
-              green: "#8fb01f",
-              "green-light": "#eef4d9",
+              green: "#a1bf17",
+              "green-light": "#f0f6d4",
               wine: "#7a2035",
               "wine-light": "#f9eef1",
               cream: "#f8faf4",
@@ -42,10 +42,12 @@
   </script>
   <script id="contact-config" type="application/json">
   {
-    "adresse": "Angle Bd Noukawama et Med VI, Résidence El Baida I",
-    "ville": "2ème étage, App 212, Casablanca",
+    "adresse": "Angle Bd Moukawama et Med VI, Résidence El Baida I",
+    "ville": "2ème étage, App 210, Casablanca",
     "email": "info@2oservice.com",
     "formEmail": "omegaoutsourcing.info@gmail.com",
+    "formProvider": "auto",
+    "web3formsAccessKey": "3b116ccb-2765-48de-9bac-67643b58dd4a",
     "telephone": "06 44 91 37 60",
     "latitude": 33.585482100598725,
     "longitude": -7.606921427208705
@@ -54,6 +56,19 @@
   <style>
     html {
       scroll-behavior: smooth;
+    }
+    .hero-desc {
+      font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+      font-size: 1.0625rem;
+      font-weight: 400;
+      line-height: 1.8;
+      letter-spacing: 0.01em;
+      color: #475569;
+    }
+    @media (min-width: 640px) {
+      .hero-desc {
+        font-size: 1.125rem;
+      }
     }
     .bg-cover-img {
       background-size: cover;
@@ -86,7 +101,7 @@
       color: #7a2035;
     }
     .nav-brand-green {
-      color: #8fb01f;
+      color: #a1bf17;
     }
     .nav-link {
       color: #7a2035;
@@ -97,87 +112,80 @@
       transition: color 0.25s ease;
     }
     .nav-link:hover {
-      color: #8fb01f;
+      color: #631a2b;
     }
-    .nav-btn {
-      position: relative;
+    .nav-btn,
+    .btn-brand {
       color: #fff;
-      background: linear-gradient(135deg, #8fb01f 0%, #6d8f18 100%);
-      box-shadow: 0 4px 14px rgba(143, 176, 31, 0.4);
-      overflow: hidden;
-      animation: navBtnGlow 2.2s ease-in-out infinite;
+      background: #7a2035;
+      box-shadow: 0 2px 8px rgba(122, 32, 53, 0.22);
+      transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .nav-btn::after {
-      content: "";
-      position: absolute;
-      z-index: 0;
-      top: 0;
-      left: -120%;
-      width: 60%;
-      height: 100%;
-      background: linear-gradient(
-        105deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.45) 45%,
-        transparent 100%
-      );
-      animation: navBtnShine 2.8s ease-in-out infinite;
-      pointer-events: none;
-    }
-    .nav-btn:hover {
-      color: #fff;
-      filter: brightness(1.06);
+    .nav-btn:hover,
+    .btn-brand:hover:not(:disabled) {
+      background: #631a2b;
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(122, 32, 53, 0.28);
     }
-    .nav-btn svg {
-      position: relative;
-      z-index: 1;
+    .nav-btn:active,
+    .btn-brand:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(122, 32, 53, 0.2);
     }
-    @keyframes navBtnGlow {
-      0%,
-      100% {
-        box-shadow: 0 4px 14px rgba(143, 176, 31, 0.35);
-      }
-      50% {
-        box-shadow: 0 4px 22px rgba(143, 176, 31, 0.65), 0 0 28px rgba(143, 176, 31, 0.2);
-      }
+    .accent-green {
+      color: #a1bf17;
     }
-    @keyframes navBtnShine {
-      0%,
-      72%,
-      100% {
-        left: -120%;
-      }
-      38% {
-        left: 140%;
-      }
+    .badge-soon {
+      border: 1px solid rgba(122, 32, 53, 0.12);
+      background: rgba(255, 255, 255, 0.85);
+      color: #7a2035;
+      box-shadow: 0 1px 4px rgba(122, 32, 53, 0.06);
     }
-    @media (prefers-reduced-motion: reduce) {
-      .nav-btn,
-      .nav-btn::after {
-        animation: none;
-      }
+    .field-required {
+      color: #7a2035;
+      font-weight: 700;
     }
     .field-error {
       font-size: 0.75rem;
       line-height: 1.25;
       color: #b91c1c;
     }
+    @keyframes feedbackPop {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .feedback-enter {
+      animation: feedbackPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    .map-app-link {
+      color: #7a2035;
+      transition: color 0.2s ease, opacity 0.2s ease;
+    }
+    .map-app-link:hover {
+      color: #631a2b;
+      opacity: 0.9;
+    }
     .input-light.is-invalid {
       border-color: #dc2626;
       box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
     }
     .tag-expertise {
-      border: 1px solid rgba(143, 176, 31, 0.22);
-      background: linear-gradient(135deg, rgba(161, 191, 23, 0.1) 0%, rgba(248, 250, 244, 0.85) 100%);
-      color: #5a6b18;
+      border: 1px solid rgba(122, 32, 53, 0.14);
+      background: rgba(249, 238, 241, 0.55);
+      color: #7a2035;
       transition: background 0.3s ease, border-color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
     }
     .tag-expertise:hover {
-      border-color: rgba(143, 176, 31, 0.4);
-      background: linear-gradient(135deg, rgba(161, 191, 23, 0.18) 0%, rgba(238, 244, 217, 0.95) 100%);
+      border-color: rgba(122, 32, 53, 0.28);
+      background: #f9eef1;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(143, 176, 31, 0.12);
+      box-shadow: 0 4px 12px rgba(122, 32, 53, 0.08);
     }
     .card-light {
       border: 1px solid rgba(122, 32, 53, 0.12);
@@ -189,24 +197,9 @@
     }
     .input-light:focus,
     .input-light:focus-visible {
-      border-color: #8fb01f;
+      border-color: #7a2035;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(161, 191, 23, 0.28);
-    }
-    .btn-brand {
-      background: #8fb01f;
-      color: #fff;
-      box-shadow: 0 4px 12px rgba(143, 176, 31, 0.3);
-      transition: background-color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
-    }
-    .btn-brand:hover:not(:disabled) {
-      background: #7a9919;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(143, 176, 31, 0.45);
-    }
-    .btn-brand:active:not(:disabled) {
-      transform: translateY(0);
-      box-shadow: 0 3px 10px rgba(143, 176, 31, 0.35);
+      box-shadow: 0 0 0 3px rgba(122, 32, 53, 0.14);
     }
     .page-overlay {
       background: linear-gradient(180deg, rgba(248, 250, 244, 0.92) 0%, rgba(255, 255, 255, 0.85) 50%, rgba(244, 247, 238, 0.93) 100%);
@@ -226,8 +219,8 @@
       transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
     }
     .map-zoom-btn:hover:not(:disabled) {
-      background: #eef4d9;
-      color: #5a6b18;
+      background: #f9eef1;
+      color: #631a2b;
     }
     .map-zoom-btn:disabled {
       cursor: not-allowed;
@@ -240,9 +233,9 @@
       transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
     }
     .map-action-btn:hover {
-      border-color: rgba(143, 176, 31, 0.45);
-      background: #eef4d9;
-      color: #5a6b18;
+      border-color: rgba(122, 32, 53, 0.28);
+      background: #f9eef1;
+      color: #631a2b;
       transform: translateY(-1px);
     }
   </style>
@@ -278,7 +271,7 @@
       <a href="demande-devis.html"
         class="nav-btn inline-flex shrink-0 items-center justify-center gap-2 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition sm:px-5 sm:py-2.5 sm:text-sm">
         Demander un devis
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <svg class="accent-green h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
         </svg>
       </a>
@@ -290,23 +283,22 @@
     <main class="grid flex-1 grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:items-start lg:gap-12">
 
       <section class="motion-safe:animate-fade-up">
-        <p class="mb-5 inline-flex items-center gap-2.5 rounded-full border border-brand-green/30 bg-brand-green-light px-4 py-2 text-sm font-bold uppercase tracking-wide text-brand-green shadow-sm sm:mb-6 sm:gap-3 sm:px-5 sm:py-2.5 sm:text-base">
-          <span class="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
-            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-green opacity-75"></span>
+        <p class="badge-soon mb-5 inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide sm:mb-6 sm:gap-3 sm:px-5 sm:py-2.5 sm:text-sm">
+          <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-green opacity-60"></span>
             <span class="relative inline-flex h-full w-full rounded-full bg-brand-green"></span>
           </span>
           Bientôt en ligne
         </p>
-        <h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight text-slate-800 sm:text-4xl md:text-5xl">
-          <span class="text-brand-green">L'ingénierie</span><br />
-          qui construit demain
+        <h1 class="mb-4 text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl">
+          <span class="text-brand-wine">L'ingénierie</span><br />
+          <span class="text-brand-green">qui construit demain</span>
         </h1>
-        <p
-         class="mb-6 max-w-lg text-base leading-relaxed text-slate-600 sm:text-lg">
+        <p class="hero-desc mb-8 max-w-lg sm:mb-10">
           Structure, VRD, coordination, interprétation — maître d'ouvrage délégué, contractant général : nous accompagnons vos projets avec rigueur et réactivité. Le site complet arrive très bientôt.
         </p>
 
-        <div class="mb-6 flex flex-wrap gap-2" aria-label="Expertises">
+        <div class="mb-8 flex flex-wrap gap-2.5 sm:mb-10 sm:gap-3" aria-label="Expertises">
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Études techniques</span>
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Structure</span>
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">VRD</span>
@@ -316,7 +308,7 @@
           <span class="tag-expertise rounded-full px-3 py-1.5 text-xs font-medium sm:text-sm">Contractant général</span>
         </div>
 
-        <div class="mb-6 grid grid-cols-3 gap-2 sm:gap-3" aria-label="Génie civil">
+        <div class="mb-8 grid grid-cols-3 gap-3 sm:mb-10 sm:gap-4" aria-label="Génie civil">
           <div class="bg-cover-img img-plans min-h-[90px] rounded-lg border border-brand-wine/15 shadow-sm sm:min-h-[110px]" role="img" aria-label="Plans et documents d'études techniques sur un bureau"></div>
           <div class="bg-cover-img img-chantier min-h-[90px] rounded-lg border border-brand-wine/15 shadow-sm sm:min-h-[110px]" role="img" aria-label="Chantier de construction avec ouvriers et engins"></div>
           <div class="bg-cover-img img-structure min-h-[90px] rounded-lg border border-brand-wine/15 shadow-sm sm:min-h-[110px]" role="img" aria-label="Structure métallique et ingénierie du bâtiment"></div>
@@ -340,13 +332,13 @@
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9 6 9-6" />
               </svg>
-              <a :href="mailHref" x-text="email" class="font-medium text-slate-700 hover:text-brand-green"></a>
+              <a :href="mailHref" x-text="email" class="font-medium text-slate-700 hover:text-brand-wine"></a>
             </li>
             <li class="flex gap-3">
               <svg class="mt-0.5 h-4 w-4 shrink-0 text-brand-green" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.62a2 2 0 0 1-.45 2.11L8 9.85a16 16 0 0 0 6.15 6.15l1.4-1.28a2 2 0 0 1 2.11-.45c.84.29 1.72.5 2.62.62A2 2 0 0 1 22 16.92z" />
               </svg>
-              <a :href="phoneHref(telephone)" x-text="telephone" class="font-medium text-slate-700 hover:text-brand-green"></a>
+              <a :href="phoneHref(telephone)" x-text="telephone" class="font-medium text-slate-700 hover:text-brand-wine"></a>
             </li>
             <!-- <li class="flex gap-3">
               <svg class="mt-0.5 h-4 w-4 shrink-0 text-brand-green" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
@@ -403,7 +395,7 @@
                 class="map-action-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm"
               >
                 Google Maps
-                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <svg class="accent-green h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3" />
                 </svg>
               </a>
@@ -414,7 +406,7 @@
                 class="map-action-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm"
               >
                 Itinéraire
-                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <svg class="accent-green h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 20 3 17V4l6 3 6-3 6 3v13l-6-3-6 3Z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="m9 4 0 13M15 7v13" />
                 </svg>
@@ -426,30 +418,41 @@
                 class="map-action-btn inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold sm:text-sm"
               >
                 Waze
-                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <svg class="accent-green h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z" />
                   <circle cx="12" cy="9" r="2.5" />
                 </svg>
               </a>
             </div>
+            <a
+              href="#"
+              class="map-app-link mt-3 inline-flex items-center gap-1.5 text-xs font-semibold sm:text-sm"
+              @click.prevent="openInMapsApp($event)"
+            >
+              Ouvrir dans l'application
+              <svg class="accent-green h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 3h6v6M10 14 21 3" />
+              </svg>
+            </a>
           </div>
         </div>
       </section>
 
       <aside
-        x-data="ajaxForm()"
+        x-data="ajaxForm({ successMessage: 'Merci ! Votre message a été envoyé.' })"
         class="motion-safe:animate-fade-up w-full lg:max-w-md lg:justify-self-end xl:max-w-lg"
         style="animation-delay: 0.1s"
       >
-        <div class="card-light rounded-2xl p-5 sm:p-6 md:p-7">
-          <div class="mb-5 sm:mb-6">
+        <div class="card-light rounded-2xl px-6 py-7 sm:px-8 sm:py-9 md:px-9 md:py-10">
+          <div class="mb-7 sm:mb-8">
             <h2 class="text-xl font-bold text-brand-wine sm:text-2xl">Nous contacter</h2>
-            <p class="mt-1 text-sm text-slate-500">Décrivez votre projet — réponse sous 24 heures.</p>
+            <p class="mt-2 text-sm text-slate-500">Décrivez votre projet — réponse sous 24 heures.</p>
+            <p class="mt-1.5 text-xs text-slate-400"><span class="field-required">*</span> Champs obligatoires</p>
           </div>
 
           <form
             id="contact-form"
-            class="space-y-4"
+            class="space-y-5"
             novalidate
             @submit.prevent="onSubmit($event)"
           >
@@ -459,16 +462,16 @@
             <input type="hidden" name="_replyto" value="" />
             <input type="text" name="_honey" class="hidden" tabindex="-1" autocomplete="off" />
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div class="flex flex-col gap-1.5" data-field="nom">
-                <label for="nom" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Nom</label>
+                <label for="nom" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Nom <span class="field-required" aria-hidden="true">*</span></label>
                 <input type="text" id="nom" name="nom" required placeholder="Nom" autocomplete="family-name"
                   class="input-light w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 sm:text-base"
                   @input="$el.classList.remove('is-invalid'); $el.closest('[data-field]')?.querySelector('.field-error')?.classList.add('hidden')" />
                 <p class="field-error hidden" role="alert"></p>
               </div>
               <div class="flex flex-col gap-1.5" data-field="prenom">
-                <label for="prenom" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Prénom</label>
+                <label for="prenom" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Prénom <span class="field-required" aria-hidden="true">*</span></label>
                 <input type="text" id="prenom" name="prenom" required placeholder="Prénom" autocomplete="given-name"
                   class="input-light w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 sm:text-base"
                   @input="$el.classList.remove('is-invalid'); $el.closest('[data-field]')?.querySelector('.field-error')?.classList.add('hidden')" />
@@ -476,9 +479,9 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div class="flex flex-col gap-1.5" data-field="email">
-                <label for="email" class="text-xs font-semibold uppercase tracking-wider text-slate-500">E-mail</label>
+                <label for="email" class="text-xs font-semibold uppercase tracking-wider text-slate-500">E-mail <span class="field-required" aria-hidden="true">*</span></label>
                 <input type="email" id="email" name="email" required placeholder="Votre mail" autocomplete="email"
                   class="input-light w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 sm:text-base"
                   @input="$el.classList.remove('is-invalid'); $el.closest('[data-field]')?.querySelector('.field-error')?.classList.add('hidden')" />
@@ -494,7 +497,7 @@
             </div>
 
             <div class="flex flex-col gap-1.5" data-field="description">
-              <label for="description" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Message</label>
+                <label for="description" class="text-xs font-semibold uppercase tracking-wider text-slate-500">Message <span class="field-required" aria-hidden="true">*</span></label>
               <textarea id="description" name="description" required rows="4" placeholder="Message"
                 class="input-light min-h-[96px] w-full resize-y rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 sm:text-base"
                 @input="$el.classList.remove('is-invalid'); $el.closest('[data-field]')?.querySelector('.field-error')?.classList.add('hidden')"></textarea>
@@ -504,22 +507,24 @@
             <p
               x-show="feedbackVisible"
               x-cloak
+              x-transition:enter="transition ease-out duration-500"
+              x-transition:enter-start="opacity-0 translate-y-2"
+              x-transition:enter-end="opacity-100 translate-y-0"
               :class="feedbackClass"
               x-text="feedbackText"
               role="alert"
               aria-live="polite"
-              class="rounded-lg px-3 py-2.5 text-center text-sm"
             ></p>
 
             <button
               type="submit"
               id="btn-submit"
               :disabled="submitting"
-              class="btn-brand flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold transition disabled:opacity-50 sm:text-base"
+              class="btn-brand mt-7 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3.5 text-sm font-semibold transition disabled:opacity-50 sm:mt-8 sm:text-base"
             >
               <span x-show="!submitting" class="inline-flex items-center justify-center gap-2">
                 Envoyer
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <svg class="accent-green h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </span>
