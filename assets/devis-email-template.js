@@ -339,6 +339,34 @@ function getFormProvider() {
   return "auto";
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isRetryableResult(result) {
+  if (result.ok) return false;
+  const m = (result.message || "").toLowerCase();
+  return (
+    m.includes("délai") ||
+    m.includes("timeout") ||
+    m.includes("connexion") ||
+    m.includes("inaccessible") ||
+    m.includes("indisponible") ||
+    m.includes("521") ||
+    m.includes("réseau") ||
+    m.includes("répond pas")
+  );
+}
+
+async function tryWithRetry(fn, retries = 1) {
+  let result = await fn();
+  for (let i = 0; i < retries && !result.ok && isRetryableResult(result); i++) {
+    await sleep(1000);
+    result = await fn();
+  }
+  return result;
+}
+
 function buildPayloadFromFormData(formData) {
   const payload = {};
   formData.forEach((value, key) => {
@@ -364,21 +392,16 @@ function buildWeb3FormsBody(payload) {
   if (replyTo) body.replyto = replyTo;
 
   // Champs personnalisés en français — évite Name / Email / Phone en anglais + doublon.
-  if (corps && corps.length > 120) {
-    body["Demande"] = corps;
-    return body;
-  }
-
   if (prenom) body["Prénom"] = prenom;
   if (nom) body["Nom"] = nom;
   if (replyTo) body["E-mail"] = replyTo;
   if (payload.telephone) body["Téléphone"] = payload.telephone;
-  if (corps) body["Message"] = corps;
+  if (corps) body[corps.length > 120 ? "Demande" : "Message"] = corps;
 
   return body;
 }
 
-const FORM_FETCH_TIMEOUT_MS = 12000;
+const FORM_FETCH_TIMEOUT_MS = 18000;
 
 async function fetchFormService(url, options) {
   const controller = new AbortController();
@@ -417,7 +440,7 @@ async function submitViaWeb3Forms(formData) {
       return {
         ok: false,
         message:
-          "Délai dépassé (12 s). Réessayez ou écrivez à " + getFormSubmitEmail() + ".",
+          "Délai dépassé (18 s). Réessayez ou écrivez à " + getFormSubmitEmail() + ".",
       };
     }
     return {
@@ -489,7 +512,7 @@ async function submitViaFormSubmit(formData) {
     if (err.message === "timeout") {
       return {
         ok: false,
-        message: "FormSubmit ne répond pas (délai 12 s).",
+        message: "FormSubmit ne répond pas (délai 18 s).",
       };
     }
     return {
@@ -516,8 +539,8 @@ async function submitFormDataToEmail(formDataOrForm) {
   const provider = getFormProvider();
   const hasWeb3 = !!getWeb3FormsAccessKey();
 
-  const tryWeb3 = () => submitViaWeb3Forms(formData);
-  const tryFormSubmit = () => submitViaFormSubmit(formData);
+  const tryWeb3 = () => tryWithRetry(() => submitViaWeb3Forms(formData));
+  const tryFormSubmit = () => tryWithRetry(() => submitViaFormSubmit(formData));
 
   if (provider === "formsubmit") {
     const primary = await tryFormSubmit();
@@ -538,14 +561,15 @@ async function submitFormDataToEmail(formDataOrForm) {
     return primary;
   }
 
-  // auto : FormSubmit d'abord (e-mails propres en français), Web3Forms en secours
-  const primary = await tryFormSubmit();
-  if (primary.ok) return primary;
+  // auto : Web3Forms d'abord (plus fiable), FormSubmit en secours
   if (hasWeb3) {
-    const fallback = await tryWeb3();
+    const primary = await tryWeb3();
+    if (primary.ok) return primary;
+    const fallback = await tryFormSubmit();
     if (fallback.ok) return fallback;
+    return primary;
   }
-  return primary;
+  return tryFormSubmit();
 }
 
 window.FormMail = {
