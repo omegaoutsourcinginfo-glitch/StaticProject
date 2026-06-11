@@ -1044,6 +1044,7 @@
     try {
       const result = await submitDevisEmail();
       if (result.ok) {
+        window.FormMail?.trackFormSubmit?.("devis");
         hideSubmitFeedback();
         showSuccess();
       } else {

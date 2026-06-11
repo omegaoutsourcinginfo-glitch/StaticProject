@@ -572,9 +572,32 @@ async function submitFormDataToEmail(formDataOrForm) {
   return tryFormSubmit();
 }
 
+/** Événement GA4 — envoi formulaire réussi (contact ou devis). */
+function trackFormSubmit(formId) {
+  if (typeof gtag !== "function") return;
+  const labels = {
+    contact: "Contact",
+    devis: "Demande de devis",
+  };
+  const formName = labels[formId] || formId;
+  gtag("event", "generate_lead", {
+    form_id: formId,
+    form_name: formName,
+    page_location: window.location.href,
+    page_path: window.location.pathname,
+  });
+  gtag("event", "form_submit", {
+    form_id: formId,
+    form_name: formName,
+    event_category: "engagement",
+    event_label: formName,
+  });
+}
+
 window.FormMail = {
   getFormSubmitEmail,
   submitFormDataToEmail,
+  trackFormSubmit,
 };
 
 function clearInlineErrors(form) {
@@ -684,6 +707,7 @@ function createAjaxFormHandlers(opts = {}) {
       try {
         const result = await submitFormDataToEmail(form);
         if (result.ok) {
+          trackFormSubmit("contact");
           this.showSuccess(this.successMessage);
           form.reset();
           this.$nextTick(() => {
